@@ -38,6 +38,10 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           logout: false
 
+      - name: Set date tag
+        id: date_tag
+        run: echo "DATE_TAG=$(date +'%Y%m%d')" >> $GITHUB_ENV
+
       - name: Build and push
         id: push
         uses: docker/build-push-action@v6
@@ -47,7 +51,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/imageproxy:latest
-            ghcr.io/${{ github.repository }}/imageproxy:$(date +'%Y%m%d')
+            ghcr.io/${{ github.repository }}/imageproxy:${{ steps.date_tag.outputs.DATE_TAG }}
           platforms: linux/amd64,linux/arm64
 
       - name: Generate artifact attestation
