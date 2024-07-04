@@ -51,7 +51,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository }}/imageproxy:latest
-            ghcr.io/${{ github.repository }}/imageproxy:${{ steps.date_tag.outputs.DATE_TAG }}
+            ghcr.io/${{ github.repository }}/imageproxy:${{ env.DATE_TAG }}
           platforms: linux/amd64,linux/arm64
 
       - name: Generate artifact attestation
