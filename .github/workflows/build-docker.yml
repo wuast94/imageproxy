@@ -48,5 +48,5 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ steps.versioning.outputs.new_version }}
+          tags: ghcr.io/${{ github.repository }}/imageproxy:${{ steps.versioning.outputs.new_version }}
           platforms: linux/amd64,linux/arm64
