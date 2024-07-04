@@ -51,13 +51,14 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}/imageproxy:latest
-            ghcr.io/${{ github.repository }}/imageproxy:${{ env.DATE_TAG }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DATE_TAG }}
           platforms: linux/amd64,linux/arm64
 
-      - name: Generate artifact attestation
+      - name: Attest
         uses: actions/attest-build-provenance@v1
+        id: attest
         with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
