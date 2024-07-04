@@ -25,22 +25,11 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Extract version and increment
-        id: versioning
-        run: |
-          VERSION=$(git describe --tags --abbrev=0) # Assuming tags are used for versioning
-          BASE_VERSION=${VERSION%.*}
-          SUB_VERSION=${VERSION##*.}
-          NEW_SUB_VERSION=$((SUB_VERSION + 1))
-          NEW_VERSION="$BASE_VERSION.$NEW_SUB_VERSION"
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "::set-output name=new_version::$NEW_VERSION"
-
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/imageproxy:${{ steps.versioning.outputs.new_version }}
+          tags: ghcr.io/${{ github.repository }}/imageproxy:0.0.1
           platforms: linux/amd64,linux/arm64
