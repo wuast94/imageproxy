@@ -1,8 +1,9 @@
-from flask import Flask, request, render_template_string
+# trunk-ignore-all(black)
+from flask import Flask, render_template_string, request
 
 app = Flask(__name__)
 
-HTML_TEMPLATE = '''
+HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,16 +15,22 @@ HTML_TEMPLATE = '''
   <img src="{{ image_url }}" alt="Proxied Image">
 </body>
 </html>
-'''
+"""
 
-@app.route('/image')
+
+@app.route("/image")
 def proxy_image():
-  image_url = request.args.get('url')
-  if not image_url:
-    return "No image URL provided", 400
+    image_url = request.args.get("url")
+    if not image_url:
+        return "No image URL provided", 400
 
-  html_content = render_template_string(HTML_TEMPLATE, image_url=image_url)
-  return html_content
+    html_content = render_template_string(HTML_TEMPLATE, image_url=image_url)
+    return html_content
 
-if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=5000)
+@app.route("/health")
+def health():
+    return "OK"
+
+if __name__ == "__main__":
+    # trunk-ignore(bandit/B104)
+    app.run(host="0.0.0.0", port=8000)

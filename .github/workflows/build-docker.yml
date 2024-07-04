@@ -1,5 +1,7 @@
 name: Build and Push Docker
 
+permissions: read-all
+
 on:
   push:
     branches:
@@ -25,11 +27,26 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version and increment
+        id: versioning
+        run: |
+          # Get the latest tag from git
+          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          # Strip the 'v' prefix if it exists
+          VERSION=${VERSION#v}
+          # Split the version into its components
+          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
+          # Increment the patch version
+          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
+          # Output the new version
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/imageproxy:0.0.1
+          tags: ghcr.io/${{ github.repository }}:${{ steps.versioning.outputs.new_version }}
           platforms: linux/amd64,linux/arm64

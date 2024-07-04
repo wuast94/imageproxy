@@ -1,4 +1,4 @@
-FROM python:3.13.0b3 as base
+FROM python:3.13.0b3 AS base
 
 # Prevents Python from writing pyc files.
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -13,21 +13,20 @@ WORKDIR /app
 # See https://docs.docker.com/go/dockerfile-user-best-practices/
 ARG UID=10001
 RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    appuser
+  --disabled-password \
+  --gecos "" \
+  --home "/nonexistent" \
+  --shell "/sbin/nologin" \
+  --no-create-home \
+  --uid "${UID}" \
+  appuser
 
 # Download dependencies as a separate step to take advantage of Docker's caching.
 # Leverage a cache mount to /root/.cache/pip to speed up subsequent builds.
 # Leverage a bind mount to requirements.txt to avoid having to copy them into
 # into this layer.
-RUN --mount=type=cache,target=/root/.cache/pip \
-    --mount=type=bind,source=requirements.txt,target=requirements.txt \
-    python -m pip install -r requirements.txt
+RUN --mount=type=bind,source=requirements.txt,target=requirements.txt \
+  python -m pip install --no-cache-dir -r requirements.txt
 
 # Switch to the non-privileged user to run the application.
 USER appuser
@@ -38,5 +37,7 @@ COPY app.py .
 # Expose the port that the application listens on.
 EXPOSE 8000
 
+HEALTHCHECK --interval=10s --timeout=10s --start-period=5s --retries=3 CMD curl -f http://localhost:8000/health | grep OK || exit 1
+
 # Run the application.
-CMD waitress-serve --host=0.0.0.0 --port=8000 app:app
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=8000", "app:app"]
