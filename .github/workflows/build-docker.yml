@@ -10,6 +10,8 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: 0 0 * * *
 
 env:
   REGISTRY: ghcr.io
@@ -36,21 +38,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           logout: false
 
-      - name: Extract version and increment
-        id: versioning
-        run: |
-          # Get the latest tag from git
-          VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          # Strip the 'v' prefix if it exists
-          VERSION=${VERSION#v}
-          # Split the version into its components
-          IFS='.' read -r -a VERSION_PARTS <<< "$VERSION"
-          # Increment the patch version
-          NEW_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$((VERSION_PARTS[2] + 1))"
-          # Output the new version
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-
       - name: Build and push
         id: push
         uses: docker/build-push-action@v6
@@ -58,7 +45,9 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}/imageproxy:${{ steps.versioning.outputs.new_version }}
+          tags: |
+            ghcr.io/${{ github.repository }}/imageproxy:latest
+            ghcr.io/${{ github.repository }}/imageproxy:$(date +'%Y%m%d')
           platforms: linux/amd64,linux/arm64
 
       - name: Generate artifact attestation
